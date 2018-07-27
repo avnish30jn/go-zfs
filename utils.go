@@ -2,14 +2,17 @@ package zfs
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pborman/uuid"
 )
@@ -21,9 +24,16 @@ type command struct {
 }
 
 func (c *command) Run(arg ...string) ([][]string, error) {
+	var cmd *exec.Cmd
 
-	cmd := exec.Command(c.Command, arg...)
-
+	value := os.Getenv("COMMAND_TIMEOUT")
+	if timeout, err := time.ParseDuration(value); value != "" && err != nil {
+		ctx, cancel := context.WithTimeout(context.TODO(), timeout)
+		defer cancel()
+		cmd = exec.CommandContext(ctx, c.Command, arg...)
+	} else {
+		cmd = exec.Command(c.Command, arg...)
+	}
 	var stdout, stderr bytes.Buffer
 
 	if c.Stdout == nil {
