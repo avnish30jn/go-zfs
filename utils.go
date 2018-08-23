@@ -42,7 +42,7 @@ func (c *command) Run(arg ...string) ([][]string, error) {
 	if c.timeout == nil {
 		cmd = exec.Command(c.Command, arg...)
 	} else {
-		ctx, cancel := context.WithTimeout(context.TODO(), c.timeout)
+		ctx, cancel := context.WithTimeout(context.TODO(), *c.timeout)
 		defer cancel()
 		cmd = exec.CommandContext(ctx, c.Command, arg...)
 	}
